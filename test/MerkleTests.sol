@@ -58,7 +58,6 @@ contract MerkleTests is Test, MerkleTestUtils {
     }
 
     function testStressTestTree() public {
-        uint256 len = MAX_NODES;
         console.log("insert index 0 (cold)");
         updateNode(0, 1);
         console.log("insert index 1 (warm)");
