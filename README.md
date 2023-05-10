@@ -53,6 +53,9 @@ Simply define the data structures for your items (`MyStruct` here) and update pa
 ```solidity
 import "protomerkle/src/MerkleTree.sol";
 
+uint8 constant TREE_HEIGHT = 5;
+uint16 constant ITEM_SIZE = 64; // this is sizeof(MyStruct)
+
 contract ExampleMerkleTree is MerkleTree {
     struct MyStruct {
         uint256 value;
@@ -63,8 +66,7 @@ contract ExampleMerkleTree is MerkleTree {
         uint256 amount;
     }
 
-    // merkle tree height = 5, item size = sizeof(MyStruct)
-    constructor() MerkleTree(5, 64) {
+    constructor() MerkleTree(TREE_HEIGHT, ITEM_SIZE) {
     }
 
     function _onBeforeUpdate(bytes memory item, bytes memory params) internal view override returns (bytes memory) {
