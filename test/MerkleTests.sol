@@ -2,12 +2,13 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-import "../src/MerkleItem.sol";
 import "../test/utils/MerkleTestUtils.sol";
 
 // silly test helper since it is using the same contract it is testing...
 // even though it accesses the functionality differently to test other functions
 // it still requires delicate care
+
+import "../src/MerkleTree.sol";
 
 contract MerkleTests is Test, MerkleTestUtils {
     MerkleTree public merkle;

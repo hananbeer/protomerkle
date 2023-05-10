@@ -105,7 +105,6 @@ contract MerkleTree {
     bytes memory params
   ) public payable {
     require(_depositProof.length == TREE_HEIGHT, "proofs length must be TREE_HEIGHT");
-    // console.log("params: %d", params.length);
     uint256 lastIndex = $countItems;
     require(index <= lastIndex, "[u] index out of bounds");
     require(index < MAX_NODES, "tree is full");
@@ -118,17 +117,17 @@ contract MerkleTree {
     require(preUpdateHash == $rootHash, "invalid pre-update root");
 
     // update item in-memory
-    _onBeforeUpdate(item, params);
+    item = _onBeforeUpdate(item, params);
 
     // post-update root calculation
     uint256 newLeaf = _hashLeaf(item);
     $rootHash = _calcRoot(_depositProof, newLeaf);
 
     // apply updates to storage
+    _setItem(index, item);
     if (index == lastIndex) {
       $countItems++;
     }
-    _setItem(index, item);
 
     // call post-update hooks
     _onAfterUpdate(item, params);
@@ -141,10 +140,11 @@ contract MerkleTree {
     require(item.length == params.length, "item and params must be same length");
     assembly {
         let size := mload(params)
+        let item_off := item
         for { let i := 0 } lt(i, size) { i := add(i, 32) } {
-            item := add(item, 32)
+            item_off := add(item_off, 32)
             params := add(params, 32)
-            mstore(item, mload(params))
+            mstore(item_off, mload(params))
         }
     }
     return item;
