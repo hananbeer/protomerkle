@@ -102,12 +102,12 @@ contract MerkleTree {
   function updateItem(
     uint256 index,
     uint256[] calldata _depositProof,
-    bytes memory params
+    bytes calldata params
   ) public payable {
     require(_depositProof.length == TREE_HEIGHT, "proofs length must be TREE_HEIGHT");
+    require(index < MAX_NODES, "tree is full");
     uint256 lastIndex = $countItems;
     require(index <= lastIndex, "[u] index out of bounds");
-    require(index < MAX_NODES, "tree is full");
 
     bytes memory item = _getItem(index);
 
@@ -117,7 +117,7 @@ contract MerkleTree {
     require(preUpdateHash == $rootHash, "invalid pre-update root");
 
     // update item in-memory
-    item = _onBeforeUpdate(item, params);
+    item = _onBeforeUpdate(index, item, params);
 
     // post-update root calculation
     uint256 newLeaf = _hashLeaf(item);
@@ -130,27 +130,21 @@ contract MerkleTree {
     }
 
     // call post-update hooks
-    _onAfterUpdate(item, params);
+    _onAfterUpdate(index, item, params);
   }
 
-  function _onBeforeUpdate(bytes memory item, bytes memory params) internal view virtual returns (bytes memory) {
+  function _onBeforeUpdate(uint256 index, bytes memory item, bytes calldata params) internal view virtual returns (bytes memory) {
     // override this function to apply updates to the item
     // this is a view function as you should not call any state-changing functions here (do this in _onAfterUpdate)
     // default behaviour is stupid - just copy all params to all items (and their lengths must be the same)
     require(item.length == params.length, "item and params must be same length");
     assembly {
-        let size := mload(params)
-        let item_off := item
-        for { let i := 0 } lt(i, size) { i := add(i, 32) } {
-            item_off := add(item_off, 32)
-            params := add(params, 32)
-            mstore(item_off, mload(params))
-        }
+        calldatacopy(add(item, 32), params.offset, mload(item))
     }
     return item;
   }
 
-  function _onAfterUpdate(bytes memory item, bytes memory params) internal virtual {
+  function _onAfterUpdate(uint256 index, bytes memory item, bytes calldata params) internal virtual {
     // no-op
     // any post-update effects should be implemented here to follow proper Checks-Effects-Interactions pattern
   }

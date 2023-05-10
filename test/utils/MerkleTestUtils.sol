@@ -11,7 +11,7 @@ abstract contract MerkleTestUtils is MerkleTree {
     function getProof(
         uint256[][] memory tree,
         uint256 index
-    ) internal returns (uint256[] memory proof) {
+    ) internal pure returns (uint256[] memory proof) {
         require(index >= 0 && index < tree[0].length, "[gp] index out of bounds");
 
         proof = new uint256[](tree.length - 1);
@@ -49,7 +49,7 @@ abstract contract MerkleTestUtils is MerkleTree {
         }
     }
 
-    function merklizeItems() internal returns (uint256[][] memory buckets) {
+    function merklizeItems() internal view returns (uint256[][] memory buckets) {
         uint256[] memory hashes = itemsToHashes();
 
         // max 2**height elements

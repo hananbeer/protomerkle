@@ -13,11 +13,11 @@ Running 1 test for test/MerkleTests.sol:MerkleTests
 [PASS] testStressTestTree() (gas: 898692)
 Logs:
   insert index 0 (cold)
-  mana: 59118
+  mana: 36802
   insert index 1 (warm)
-  mana: 27910
+  mana: 27494
   update index 1 (warmer)
-  mana: 5732
+  mana: 5601
 ```
 
 # Testing
