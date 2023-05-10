@@ -42,8 +42,8 @@ import "protomerkle/src/MerkleTree.sol";
 
 The library has a method `updateItems` which is public payable (I probably need to change this to internal soon) which accepts an index of an item to update, inclusion proof and arbitrary update parameters. (bytes memory params)
 
-If the item exists in the merkle tree then the `_onBeforeUpdate` function is called. Modify the item in this function and return the new item `abi.encode()`ed. (the internal `$countItems` has not yet updated here)
-Once the item has been updated in storage (including `$countItems`) the `_onAfterUpdate` function is called with the new item and the update params.
+If the item exists in the merkle tree then the `_onBeforeUpdate` function is called. Modify the item in this function and return the new item `abi.encode()`ed.
+Once the item has been updated in storage the `_onAfterUpdate` function is called with the new item and the update params.
 
 The default `_onBeforeUpdate` simply copies the update params into the item, but you may choose to implement partial updates, apply deltas or simply perform validation logic first.
 (note this function is currently `view` to restrict state modifications - this might need to change in the future)
@@ -71,8 +71,9 @@ contract ExampleMerkleTree is MerkleTree {
     }
 
     function _onBeforeUpdate(
+        uint256 index,
         bytes memory item,
-        bytes memory params
+        bytes calldata params
     ) internal view override returns (bytes memory) {
         // permission check
         require(hasRole(msg.sender, MERKLE_MODIFIER), "not approved");
@@ -97,13 +98,14 @@ contract ExampleMerkleTree is MerkleTree {
     }
     
     function _onAfterUpdate(
+        uint256 index,
         bytes memory item,
-        bytes memory params
-    ) internal override returns (bytes memory) {
+        bytes calldata params
+    ) internal override {
         // do your state changes here
-        MyUpdateParam memory update = abi.decode(params, (MyUpdateParam));
-        address WETH = address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
-        WETH.transferFrom(msg.sender, address(this), data.amount * 1e18);
+        //MyUpdateParam memory update = abi.decode(params, (MyUpdateParam));
+        //address WETH = address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
+        //WETH.transferFrom(msg.sender, address(this), data.amount * 1e18);
     }
 }
 ```
@@ -117,3 +119,5 @@ Here it is done manually, but you can also do something like this:
         return abi.encode(empty).length;
     }
 ```
+
+Note that the library does not keep track of number of items (this actually saved a ton of mana - up to 38%!!) so if you need to do that - do it yourself!
