@@ -47,6 +47,9 @@ If the item exists in the merkle tree then the `_onBeforeUpdate` function is cal
 By default it simply copies the update params into the item, but you may choose to implement partial updates, apply deltas or simply perform validation logic first.
 (note this function is currently `view` to restrict state modifications - this might need to change in the future)
 
+Note how you don't need to define the storage for your data - the library does it for you!
+Simply define the data structures for your items (`MyStruct` here) and update params (`MyUpdateParam` here) and decode them in the callback `_onBeforeUpdate`.
+
 ```solidity
 import "protomerkle/src/MerkleTree.sol";
 
@@ -60,7 +63,7 @@ contract ExampleMerkleTree is MerkleTree {
         uint256 amount;
     }
 
-    // merkle tree height = 5, item_size = sizeof(MyStruct)
+    // merkle tree height = 5, item size = sizeof(MyStruct)
     constructor() MerkleTree(5, 64) {
     }
 
@@ -87,4 +90,14 @@ contract ExampleMerkleTree is MerkleTree {
         return abi.encode(data);
     }
 }
+```
+
+One small caveat of Solidity lacking generics is the need to specify the size of your items data structure in the constructor.
+
+Here it is done manually, but you can also do something like this:
+```solidity
+    function _getItemSize() internal {
+        MyStruct memory empty;
+        return abi.encode(empty).length;
+    }
 ```
