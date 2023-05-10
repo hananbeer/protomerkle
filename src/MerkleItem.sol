@@ -4,18 +4,9 @@
 pragma solidity ^0.8.0;
 
 struct Item {
-  uint128 balance;
-  uint128 shares;
-  address owner;
-}
-
-enum TokenId {
-  ETH,
-  stETH,
-  rETH
+  uint256 value;
 }
 
 struct ItemUpdateParams {
-  int128 deltaBalance;
-  TokenId tokenId;
+  uint256 newValue;
 }
