@@ -71,7 +71,7 @@ contract ExampleMerkleTree is MerkleTree {
         // parse the change
         MyStruct memory data = abi.decode(item, (MyStruct));
         MyUpdateParam memory update = abi.decode(params, (MyUpdateParam));
-        console.log("data.value: %d, update.amount: %d", data.value, update.amount);
+
         // soft limit the amount
         if (update.amount > 1000)
             update.amount = 1000;
