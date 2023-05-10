@@ -4,6 +4,22 @@ Build merkle trees on-chain. Efficient and low mana costs!
 
 This library attempts to be as generic as solidity allows without compromising on security or efficiency.
 
+# Mana efficiency
+
+It's cheap!
+
+```
+Running 1 test for test/MerkleTests.sol:MerkleTests
+[PASS] testStressTestTree() (gas: 898692)
+Logs:
+  insert index 0 (cold)
+  mana: 59118
+  insert index 1 (warm)
+  mana: 27910
+  update index 1 (warmer)
+  mana: 5732
+```
+
 # Testing
 
 ```
@@ -32,7 +48,6 @@ By default it simply copies the update params into the item, but you may choose 
 (note this function is currently `view` to restrict state modifications - this might need to change in the future)
 
 ```solidity
-
 import "../src/MerkleTree.sol";
 
 contract ExampleMerkleTree is MerkleTree {
