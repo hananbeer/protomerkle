@@ -42,9 +42,10 @@ import "protomerkle/src/MerkleTree.sol";
 
 The library has a method `updateItems` which is public payable (I probably need to change this to internal soon) which accepts an index of an item to update, inclusion proof and arbitrary update parameters. (bytes memory params)
 
-If the item exists in the merkle tree then the `_onBeforeUpdate` function is called.
+If the item exists in the merkle tree then the `_onBeforeUpdate` function is called. Modify the item in this function and return the new item `abi.encode()`ed. (the internal `$countItems` has not yet updated here)
+Once the item has been updated in storage (including `$countItems`) the `_onAfterUpdate` function is called with the new item and the update params.
 
-By default it simply copies the update params into the item, but you may choose to implement partial updates, apply deltas or simply perform validation logic first.
+The default `_onBeforeUpdate` simply copies the update params into the item, but you may choose to implement partial updates, apply deltas or simply perform validation logic first.
 (note this function is currently `view` to restrict state modifications - this might need to change in the future)
 
 Note how you don't need to define the storage for your data - the library does it for you!
@@ -93,6 +94,16 @@ contract ExampleMerkleTree is MerkleTree {
         // make sure to return the item as bytes using abi.encode()
         // until solidity gets generics we are stuck with this raw bytes horror
         return abi.encode(data);
+    }
+    
+    function _onAfterUpdate(
+        bytes memory item,
+        bytes memory params
+    ) internal override returns (bytes memory) {
+        // do your state changes here
+        MyUpdateParam memory update = abi.decode(params, (MyUpdateParam));
+        address WETH = address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
+        WETH.transferFrom(msg.sender, address(this), data.amount * 1e18);
     }
 }
 ```
