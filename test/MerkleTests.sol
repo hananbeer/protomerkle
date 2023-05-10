@@ -9,6 +9,7 @@ import "../test/utils/MerkleTestUtils.sol";
 // it still requires delicate care
 
 import "../src/MerkleTree.sol";
+import "./Example.sol";
 
 contract MerkleTests is Test, MerkleTestUtils {
     MerkleTree public merkle;
@@ -40,7 +41,7 @@ contract MerkleTests is Test, MerkleTestUtils {
 
         uint256 g = gasleft();
         merkle.updateItem(index, proof, abi.encodePacked(value));
-        console.log("gas: %d", g - gasleft());
+        console.log("mana: %d", g - gasleft());
 
         _setItem(index, abi.encodePacked(value));
 
