@@ -48,7 +48,7 @@ By default it simply copies the update params into the item, but you may choose 
 (note this function is currently `view` to restrict state modifications - this might need to change in the future)
 
 ```solidity
-import "../src/MerkleTree.sol";
+import "protomerkle/src/MerkleTree.sol";
 
 contract ExampleMerkleTree is MerkleTree {
     struct MyStruct {
