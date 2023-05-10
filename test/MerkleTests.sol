@@ -9,7 +9,6 @@ import "../test/utils/MerkleTestUtils.sol";
 // it still requires delicate care
 
 import "../src/MerkleTree.sol";
-import "./Example.sol";
 
 contract MerkleTests is Test, MerkleTestUtils {
     MerkleTree public merkle;
@@ -60,11 +59,11 @@ contract MerkleTests is Test, MerkleTestUtils {
 
     function testStressTestTree() public {
         uint256 len = MAX_NODES;
-        console.log("insert into first slot (cold)");
+        console.log("insert index 0 (cold)");
         updateNode(0, 1);
-        console.log("insert into second slot (warm)");
+        console.log("insert index 1 (warm)");
         updateNode(1, 2);
-        console.log("insert again into second slot (warmer)");
+        console.log("update index 1 (warmer)");
         updateNode(1, 3);
         for (uint128 i = 2; i < MAX_NODES; i++) {
             updateNode(i, 0x100 + i);
