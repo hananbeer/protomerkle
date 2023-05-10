@@ -69,8 +69,11 @@ contract ExampleMerkleTree is MerkleTree {
     constructor() MerkleTree(TREE_HEIGHT, ITEM_SIZE) {
     }
 
-    function _onBeforeUpdate(bytes memory item, bytes memory params) internal view override returns (bytes memory) {
-        // simply permission check
+    function _onBeforeUpdate(
+        bytes memory item,
+        bytes memory params
+    ) internal view override returns (bytes memory) {
+        // permission check
         require(hasRole(msg.sender, MERKLE_MODIFIER), "not approved");
 
         // parse the change
