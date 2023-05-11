@@ -13,7 +13,7 @@ import "../src/MerkleTree.sol";
 contract MerkleTests is Test, MerkleTestUtils {
     MerkleTree public merkle;
 
-    constructor() MerkleTestUtils(8, 32) {
+    constructor() MerkleTestUtils(12, 32) {
     }
 
     function setUp() public {
@@ -59,24 +59,94 @@ contract MerkleTests is Test, MerkleTestUtils {
         );
     }
 
+    function updateBatchNodes(uint256[] memory indices, uint256[] memory values) internal {
+        uint256 len = indices.length;
+        require(len == values.length, "indices and values must be same length");
+        uint256[][] memory proofs = new uint256[][](len);
+        bytes[] memory params = new bytes[](len);
+        uint256[][] memory tree;
+        uint256 index;
+        for (uint256 i = 0; i < len; i++) {
+            index = indices[i];
+            uint256 value = values[i];
+            tree = merklizeItems();
+            proofs[i] = getProof(tree, index);
+            params[i] = abi.encodePacked(value);
+            _setItem(index, abi.encodePacked(value));
+            if (index == $countItems)
+                $countItems++;
+        }
+
+        uint256 g = gasleft();
+        merkle.updateBatchItems(indices, proofs, params);
+        console.log("mana batch: %d", g - gasleft());
+
+        // re-using proofs[] here, whatever
+        index = indices[len - 1];
+        tree = merklizeItems();
+        proofs[0] = getProof(tree, index);
+        // check last proof
+        uint256 newRoot = this.calcRoot(proofs[0], tree[0][index]);
+        if (newRoot != merkle.$rootHash()) {
+            console.log("[root differs] %x != %x", newRoot, merkle.$rootHash());
+        }
+        require(newRoot == merkle.$rootHash(), "failed to update merkle root properly!");
+    }
+
     function testStressTestTree() public {
         uint256 len = MAX_NODES;
+        updateNode(0, 1);
+        updateNode(1, 2);
+        updateNode(1, 3);
+        for (uint128 i = 2; i < MAX_NODES; i++) {
+            updateNode(i, 0x100 + i);
+            for (uint128 j = i; j > 0; j--) {
+                updateNode(j - 1, 0x1000 + i + j);
+            }
+            updateNode(i - 1, 0x10);
+        }
+        updateNode(0, 5);
+        updateNode(1, 6);
+        updateNode(0, 7);
+        updateNode(1, 8);
+    }
+
+    
+    function testMana() public {
         console.log("insert index 0 (cold)");
         updateNode(0, 1);
         console.log("insert index 1 (warm)");
         updateNode(1, 2);
         console.log("update index 1 (warmer)");
         updateNode(1, 3);
-        // for (uint128 i = 2; i < MAX_NODES; i++) {
-        //     updateNode(i, 0x100 + i);
-        //     for (uint128 j = i; j > 0; j--) {
-        //         updateNode(j - 1, 0x1000 + i + j);
-        //     }
-        //     updateNode(i - 1, 0x10);
-        // }
-        updateNode(0, 5);
+
+        console.log("repeating - warm test");
+        console.log("insert index 0 (pizza)");
+        updateNode(0, 4);
+        console.log("insert index 1 (tastes)");
+        updateNode(1, 5);
+        console.log("update index 1 (microwaved)");
         updateNode(1, 6);
-        updateNode(0, 7);
-        updateNode(1, 8);
+    }
+
+    function testManaBatch() public {
+        uint256[] memory indices = new uint256[](3);
+        uint256[] memory values = new uint256[](3);
+        indices[0] = 0;
+        indices[1] = 1;
+        indices[2] = 2;
+        values[0] = 1;
+        values[1] = 2;
+        values[2] = 3;
+
+        console.log("1st batch (cold)");
+        updateBatchNodes(indices, values);
+        
+        
+        values[0] = 4;
+        values[1] = 5;
+        values[2] = 6;
+        console.log("2nd batch (hot)");
+        updateBatchNodes(indices, values);
     }
 }
