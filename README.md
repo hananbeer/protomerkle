@@ -20,6 +20,17 @@ Logs:
   mana: 5601
 ```
 
+*UPDATE*: forge test is lying about consumption.
+based on internal tests (not committed to the git at the moment) the actual numbers are more like:
+
+```
+insert index 0 (cold): 61773
+insert index 1 (warm): 35083
+insert index 1 (warmer): 12921
+3 items batch (cold): 134033
+3 items batch (warm): 40887
+```
+
 # Testing
 
 ```

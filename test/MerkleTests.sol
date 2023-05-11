@@ -13,7 +13,7 @@ import "../src/MerkleTree.sol";
 contract MerkleTests is Test, MerkleTestUtils {
     MerkleTree public merkle;
 
-    constructor() MerkleTestUtils(11, 32) {
+    constructor() MerkleTestUtils(12, 32) {
     }
 
     function setUp() public {
@@ -40,7 +40,7 @@ contract MerkleTests is Test, MerkleTestUtils {
 
         uint256 g = gasleft();
         merkle.updateItem(index, proof, abi.encodePacked(value));
-        console.log("mana: %d", g - gasleft());
+        console.log("mana (lying forge): %d", g - gasleft());
 
         _setItem(index, abi.encodePacked(value));
         if (index == $countItems)
@@ -79,7 +79,7 @@ contract MerkleTests is Test, MerkleTestUtils {
 
         uint256 g = gasleft();
         merkle.updateBatchItems(indices, proofs, params);
-        console.log("mana batch: %d", g - gasleft());
+        console.log("mana batch (lying forge): %d", g - gasleft());
 
         // re-using proofs[] here, whatever
         index = indices[len - 1];
@@ -118,37 +118,31 @@ contract MerkleTests is Test, MerkleTestUtils {
         console.log("insert index 1 (warm)");
         updateNode(1, 2);
         console.log("update index 1 (warmer)");
-        updateNode(1, 3);
+        updateNode(2, 3);
 
-        console.log("repeating - warm test");
+        console.log("repeat - microwave test");
         console.log("insert index 0 (pizza)");
-        updateNode(0, 4);
+        updateNode(0, 2);
         console.log("insert index 1 (tastes)");
-        updateNode(1, 5);
+        updateNode(1, 3);
         console.log("update index 1 (microwaved)");
-        updateNode(1, 6);
+        updateNode(2, 4);
+        
     }
 
     function testManaBatch() public {
-        uint256[] memory indices = new uint256[](3);
-        uint256[] memory values = new uint256[](3);
-        indices[0] = 0;
-        indices[1] = 1;
-        indices[2] = 2;
-        values[0] = 1;
-        values[1] = 2;
-        values[2] = 3;
+        uint256 count = 3;
+        uint256[] memory indices = new uint256[](count);
+        uint256[] memory values = new uint256[](count);
+        for (uint256 i = 0; i < count; i++) {
+            indices[i] = i;
+            values[i] = i + 1;
+        }
 
         console.log("1st batch (cold)");
         updateBatchNodes(indices, values);
 
-        values[0] = 4;
-        values[1] = 5;
-        values[2] = 6;
         console.log("2nd batch (hot)");
-        updateBatchNodes(indices, values);
-
-        console.log("3nd batch (hottest)");
         updateBatchNodes(indices, values);
     }
 }
