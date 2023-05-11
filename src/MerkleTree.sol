@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Merkle Tree by @high_byte
 
-pragma solidity >=0.8.0;
+pragma solidity 0.8.0;
 
 contract MerkleTree {
   uint256 immutable public TREE_HEIGHT;
@@ -11,7 +11,7 @@ contract MerkleTree {
 
   uint256 public $rootHash;
   uint256 public $countItems;
-  mapping(uint256 index => uint256 ptr_base) public $items;
+  mapping(uint256 /*index*/ => uint256 /*ptr_base*/) public $items;
 
   constructor(uint8 height, uint16 item_size) {
     TREE_HEIGHT = height;
