@@ -101,13 +101,17 @@ contract MerkleTree {
     }
 
     function getAccessList(uint256[] calldata indices) external view returns (uint256[] memory access_list) {
-        access_list = new uint256[](indices.length + 1);
+        uint256 size = (ITEM_SIZE + 31) / 32;
+        access_list = new uint256[](indices.length * size + 1);
         uint256 rootHashSlot;
         /// @solidity memory-safe-assembly
         assembly { rootHashSlot := $rootHash.slot }
         access_list[access_list.length - 1] = rootHashSlot;
-        for (uint256 i = 0; i < indices.length; i++) {
-            access_list[i] = _getSlot(indices[i]);
+        for (uint256 i = 0; i < access_list.length; i += size) {
+            uint256 slot = _getSlot(indices[i]);
+            for (uint256 j = 0; j < size; j++) {
+                access_list[i + j] = slot + j;
+            }
         }
     }
 

@@ -13,7 +13,7 @@ import "../src/MerkleTree.sol";
 contract MerkleTests is Test, MerkleTestUtils {
     MerkleTree public merkle;
 
-    constructor() MerkleTestUtils(12, 32) {
+    constructor() MerkleTestUtils(11, 32) {
     }
 
     function setUp() public {
@@ -141,12 +141,14 @@ contract MerkleTests is Test, MerkleTestUtils {
 
         console.log("1st batch (cold)");
         updateBatchNodes(indices, values);
-        
-        
+
         values[0] = 4;
         values[1] = 5;
         values[2] = 6;
         console.log("2nd batch (hot)");
+        updateBatchNodes(indices, values);
+
+        console.log("3nd batch (hottest)");
         updateBatchNodes(indices, values);
     }
 }
