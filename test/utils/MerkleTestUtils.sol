@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity 0.8.19;
 
 import "forge-std/Test.sol";
 import "../../src/MerkleTree.sol";
@@ -69,7 +69,8 @@ abstract contract MerkleTestUtils is MerkleTree {
                 uint256 minLen = (hashes.length >= len ? len : hashes.length);
                 uint256 item1 = getItem(hashes, 2 * i, minLen, defaultVal);
                 uint256 item2 = getItem(hashes, 2 * i + 1, minLen, defaultVal);
-                hashes[i] = _hashBranch(item1, item2); bucket_hashes[i] = hashes[i];
+                hashes[i] = _hashBranch(item1, item2);
+                bucket_hashes[i] = hashes[i];
             }
             buckets[level] = bucket_hashes;
             len >>= 1;

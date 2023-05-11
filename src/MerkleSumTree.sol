@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Merkle Sum Tree by @high_byte
 
-pragma solidity ^0.8.0;
+pragma solidity 0.8.19;
 
 import "./MerkleTree.sol";
 

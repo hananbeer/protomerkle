@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Merkle Tree by @high_byte
 
-pragma solidity ^0.8.0;
+pragma solidity >=0.8.0;
 
 contract MerkleTree {
   uint256 immutable public TREE_HEIGHT;

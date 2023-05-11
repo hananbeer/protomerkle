@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity 0.8.19;
 
 import "forge-std/Test.sol";
 import "../test/utils/MerkleTestUtils.sol";
@@ -13,7 +13,7 @@ import "../src/MerkleTree.sol";
 contract MerkleTests is Test, MerkleTestUtils {
     MerkleTree public merkle;
 
-    constructor() MerkleTestUtils(2, 32) {
+    constructor() MerkleTestUtils(8, 32) {
     }
 
     function setUp() public {
@@ -43,6 +43,8 @@ contract MerkleTests is Test, MerkleTestUtils {
         console.log("mana: %d", g - gasleft());
 
         _setItem(index, abi.encodePacked(value));
+        if (index == $countItems)
+            $countItems++;
 
         tree = merklizeItems();
         proof = getProof(tree, index);
@@ -65,13 +67,13 @@ contract MerkleTests is Test, MerkleTestUtils {
         updateNode(1, 2);
         console.log("update index 1 (warmer)");
         updateNode(1, 3);
-        for (uint128 i = 2; i < MAX_NODES; i++) {
-            updateNode(i, 0x100 + i);
-            for (uint128 j = i; j > 0; j--) {
-                updateNode(j - 1, 0x1000 + i + j);
-            }
-            updateNode(i - 1, 0x10);
-        }
+        // for (uint128 i = 2; i < MAX_NODES; i++) {
+        //     updateNode(i, 0x100 + i);
+        //     for (uint128 j = i; j > 0; j--) {
+        //         updateNode(j - 1, 0x1000 + i + j);
+        //     }
+        //     updateNode(i - 1, 0x10);
+        // }
         updateNode(0, 5);
         updateNode(1, 6);
         updateNode(0, 7);
