@@ -14,6 +14,8 @@ contract MerkleTree {
     mapping(uint256 /*index*/ => uint256 /*ptr_base*/) public $items;
 
     constructor(uint8 height, uint16 item_size) {
+        require(item_size > 0, "item size must be greater than zero");
+        require(height > 1, "height must be greater than one");
         TREE_HEIGHT = height;
         MAX_NODES = 1 << height;
         ITEM_SIZE = item_size;
@@ -71,6 +73,7 @@ contract MerkleTree {
         slot = uint256(keccak256(abi.encode(index, slot)));
     }
 
+    // NOTE: this allocates new memory for each item. find a way to fix this.
     function _getItem(uint256 index) internal view returns (bytes memory item) {
         item = new bytes(ITEM_SIZE);
         uint256 item_size = ITEM_SIZE;
@@ -78,7 +81,11 @@ contract MerkleTree {
         /// @solidity memory-safe-assembly
         assembly {
             let item_off := add(item, 32)
-            for { let i := 0 } lt(i, item_size) { i := add(i, 32) } {
+            for {
+                let i := 0
+            } lt(i, item_size) {
+                i := add(i, 32)
+            } {
                 mstore(item_off, sload(item_slot))
                 item_off := add(item_off, 32)
                 item_slot := add(item_slot, 1)
@@ -92,7 +99,11 @@ contract MerkleTree {
         /// @solidity memory-safe-assembly
         assembly {
             let item_off := add(item, 32)
-            for { let i := 0 } lt(i, item_size) { i := add(i, 32) } {
+            for {
+                let i := 0
+            } lt(i, item_size) {
+                i := add(i, 32)
+            } {
                 sstore(item_slot, mload(item_off))
                 item_off := add(item_off, 32)
                 item_slot := add(item_slot, 1)
@@ -100,12 +111,16 @@ contract MerkleTree {
         }
     }
 
-    function getAccessList(uint256[] calldata indices) external view returns (uint256[] memory access_list) {
+    function getAccessList(
+        uint256[] calldata indices
+    ) external view returns (uint256[] memory access_list) {
         uint256 size = (ITEM_SIZE + 31) / 32;
         access_list = new uint256[](indices.length * size + 1);
         uint256 rootHashSlot;
         /// @solidity memory-safe-assembly
-        assembly { rootHashSlot := $rootHash.slot }
+        assembly {
+            rootHashSlot := $rootHash.slot
+        }
         access_list[access_list.length - 1] = rootHashSlot;
         for (uint256 i = 0; i < access_list.length; i += size) {
             uint256 slot = _getSlot(indices[i]);
@@ -158,7 +173,10 @@ contract MerkleTree {
         bytes[] calldata paramsArray
     ) public payable {
         uint256 len = indices.length;
-        require(len == proofs.length && len == paramsArray.length, "batches length must match");
+        require(
+            len == proofs.length && len == paramsArray.length,
+            "batches length must match"
+        );
         for (uint256 i = 0; i < len; i++) {
             updateItem(indices[i], proofs[i], paramsArray[i]);
         }
