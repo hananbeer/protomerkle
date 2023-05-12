@@ -183,7 +183,7 @@ contract MerkleTree {
     }
 
     function _onBeforeUpdate(
-        uint256 index,
+        uint256 /*index*/,
         bytes memory item,
         bytes calldata params
     ) internal view virtual returns (bytes memory) {

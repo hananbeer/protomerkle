@@ -94,7 +94,6 @@ contract MerkleTests is Test, MerkleTestUtils {
     }
 
     function testStressTestTree() public {
-        uint256 len = MAX_NODES;
         updateNode(0, 1);
         updateNode(1, 2);
         updateNode(1, 3);
