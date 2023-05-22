@@ -148,11 +148,14 @@ contract CachedMerkleTree {
             uint256 currentIndex = _index;
             uint256 proofElement;
 
+            bool needUpdate = true;
+
             for (uint256 i = 0; i < _depositProof.length; i++) {
                 // AUDIT-NOTE: this logic requires extra attention under magnifying glass
                 // lots of pitfalls here and I'm not sure still if this is legit...
                 unchecked {
-                    if (currentIndex % 2 == 0 && lastIndex ^ currentIndex < 2) {
+                    if (needUpdate && currentIndex % 2 == 0 && lastIndex ^ currentIndex < 2) {
+                        needUpdate = false;
                         $rmln[i] = postUpdateRootVerification;
                         if (debug) console.log("    [T] %x", postUpdateRootVerification);
                     } else {
