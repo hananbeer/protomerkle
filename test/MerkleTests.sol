@@ -69,6 +69,7 @@ contract MerkleTests is Test, MerkleTestUtils {
         for (uint256 i = 0; i < len; i++) {
             index = indices[i];
             uint256 value = values[i];
+            // TODO: currently this naive approach allows testing up to height 12~13 or so. upgrade to sparse mpt builder
             tree = merklizeItems();
             proofs[i] = getProof(tree, index);
             params[i] = abi.encodePacked(value);

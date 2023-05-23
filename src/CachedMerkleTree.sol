@@ -126,8 +126,6 @@ contract CachedMerkleTree {
             require(preUpdateRoot == $rootHash, "invalid pre-update root");
         }
 
-        uint256 postUpdateRoot = _calcRoot(_depositProof, newLeaf);
-
         // the following section is non-trivial
         // so far we:
         // 1. verified deposit proof is valid
@@ -141,7 +139,7 @@ contract CachedMerkleTree {
         // belongs to the same new modified tree
         {
             // calculate new root to ensure no other elements were modified
-            uint256 postUpdateRootVerification = newLeaf;
+            uint256 postUpdateRoot = newLeaf;
 
             // update rmln with new proof
             uint256 lastIndex = $countItems;
@@ -150,23 +148,23 @@ contract CachedMerkleTree {
 
             bool needUpdate = true;
 
-            for (uint256 i = 0; i < _depositProof.length; i++) {
+            for (uint256 i = 0; i < TREE_HEIGHT; i++) {
                 // AUDIT-NOTE: this logic requires extra attention under magnifying glass
                 // lots of pitfalls here and I'm not sure still if this is legit...
                 unchecked {
                     if (needUpdate && currentIndex % 2 == 0 && lastIndex ^ currentIndex < 2) {
                         needUpdate = false;
-                        $rmln[i] = postUpdateRootVerification;
-                        if (debug) console.log("    [T] %x", postUpdateRootVerification);
+                        $rmln[i] = postUpdateRoot;
+                        if (debug) console.log("    [T] %x", postUpdateRoot);
                     } else {
-                        if (debug) console.log("    [F] %x", postUpdateRootVerification);
+                        if (debug) console.log("    [F] %x", postUpdateRoot);
                     }
 
                     proofElement = _depositProof[i];
                 }
 
-                postUpdateRootVerification = _hashBranch(
-                    postUpdateRootVerification,
+                postUpdateRoot = _hashBranch(
+                    postUpdateRoot,
                     proofElement
                 );
 
@@ -174,12 +172,6 @@ contract CachedMerkleTree {
                 currentIndex >>= 1;
             }
 
-            // console.log("post update root: %x == %x ?", postUpdateRootVerification, postUpdateRoot);
-            // verify new root to ensure no other elements were modified
-            require(
-                postUpdateRootVerification == postUpdateRoot,
-                "invalid post-update root"
-            );
             if (debug)
                 console.log(
                     "update index %d: %x => %x",
