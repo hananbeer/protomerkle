@@ -86,8 +86,7 @@ contract CachedMerkleTree {
         return computedHash;
     }
 
-    // TODO: change newAmount to amount delta
-    // TODO: rename to withdraw?
+    // TODO: support _onBefore/AfterUpdate hooks
     function updateItem(
         uint256 _index,
         uint256[] calldata _depositProof,
@@ -104,7 +103,7 @@ contract CachedMerkleTree {
         {
             uint256 item = $items[_index];
             
-            oldLeaf = _hashLeaf(abi.encode(item));
+            oldLeaf = _hashLeaf(abi.encodePacked(item));
             newLeaf = _hashLeaf(value);
             // console.log("old leaf: %x", oldLeaf);
             // console.log("new leaf: %x", newLeaf);
@@ -116,12 +115,6 @@ contract CachedMerkleTree {
             // calcuate root from commitment proof
             uint256 preUpdateRoot = _calcRoot(_depositProof, oldLeaf);
 
-            if (debug)
-                console.log(
-                    "pre-update root: %x == %x ?",
-                    preUpdateRoot,
-                    $rootHash
-                );
             // verify commitment proof was valid
             require(preUpdateRoot == $rootHash, "invalid pre-update root");
         }
@@ -144,7 +137,7 @@ contract CachedMerkleTree {
             // update rmln with new proof
             uint256 lastIndex = $countItems;
             uint256 currentIndex = _index;
-            uint256 proofElement;
+            uint256 sibling;
 
             bool needUpdate = true;
 
@@ -152,36 +145,71 @@ contract CachedMerkleTree {
                 // AUDIT-NOTE: this logic requires extra attention under magnifying glass
                 // lots of pitfalls here and I'm not sure still if this is legit...
                 unchecked {
-                    if (needUpdate && currentIndex % 2 == 0 && lastIndex ^ currentIndex < 2) {
+                    if (needUpdate && (currentIndex & 1) == 0 && (lastIndex ^ currentIndex) < 2) {
                         needUpdate = false;
                         $rmln[i] = postUpdateRoot;
-                        if (debug) console.log("    [T] %x", postUpdateRoot);
-                    } else {
-                        if (debug) console.log("    [F] %x", postUpdateRoot);
                     }
 
-                    proofElement = _depositProof[i];
+                    sibling = _depositProof[i];
                 }
 
                 postUpdateRoot = _hashBranch(
                     postUpdateRoot,
-                    proofElement
+                    sibling
                 );
 
                 lastIndex >>= 1;
                 currentIndex >>= 1;
             }
 
-            if (debug)
-                console.log(
-                    "update index %d: %x => %x",
-                    _index,
-                    $rootHash,
-                    postUpdateRoot
-                );
-
             // finally overwrite older roots containing updated commitment
             $rootHash = postUpdateRoot;
         }
+    }
+
+    function appendItem(
+        bytes calldata value
+    ) external payable {
+        uint256 newLeaf = _hashLeaf(value);
+        // TODO: use get/setItem properly here and in updateItem...
+        uint256 index = $countItems;
+        // TODO: _onBeforeUpdate() here
+        $items[index] = abi.decode(value, (uint256));
+
+        // calculate new root to ensure no other elements were modified
+        uint256 postUpdateRoot = newLeaf;
+
+        // update rmln with new proof
+        uint256 sibling;
+
+        bool needUpdate = true;
+
+        for (uint256 i = 0; i < TREE_HEIGHT; i++) {
+            // AUDIT-NOTE: this logic requires extra attention under magnifying glass
+            // lots of pitfalls here and I'm not sure still if this is legit...
+            unchecked {
+                if (index % 2 == 0) {
+                    if (needUpdate) {
+                        $rmln[i] = postUpdateRoot;
+                        needUpdate = false;
+                    }
+                    sibling = $zeros[i];
+                } else {
+                    sibling = $rmln[i];
+                }
+            }
+
+            postUpdateRoot = _hashBranch(
+                postUpdateRoot,
+                sibling
+            );
+
+            index >>= 1;
+        }
+
+        $countItems++;
+        $rootHash = postUpdateRoot;
+
+        // TODO: _onAfterUpdate() here
     }
 }

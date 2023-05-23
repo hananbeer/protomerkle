@@ -45,7 +45,7 @@ Install the library:
 forge install hananbeer/protomerkle
 ```
 
-The base library is `MerkleTree`, but there is also an extended `MerkleSumTree`:
+The base library is `MerkleTree`, but there is also an extended `MerkleSumTree` and `CachedMerkleTree` (great for L2, has cheaper `appendItem` at insignificantly costlier inserts):
 
 ```solidity
 import "protomerkle/src/MerkleTree.sol";

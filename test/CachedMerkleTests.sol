@@ -59,6 +59,27 @@ contract CachedMerkleTests is Test, MerkleTestUtils {
         );
     }
 
+    function appendNode(uint256 value) internal {
+        uint256 g = gasleft();
+        merkle.appendItem(abi.encodePacked(value));
+        console.log("mana (lying forge): %d", g - gasleft());
+
+        uint256 index = $countItems;
+        _setItem(index, abi.encodePacked(value));
+        $countItems++;
+
+        uint256[][] memory tree = merklizeItems();
+        uint256[] memory proof = getProof(tree, index);
+        uint256 newRoot = this.calcRoot(proof, tree[0][index]);
+        if (newRoot != merkle.$rootHash()) {
+            console.log("[test root differs] merkle is %x, should be %x", merkle.$rootHash(), newRoot);
+        }
+        require(
+            newRoot == merkle.$rootHash(),
+            "failed to update merkle root properly!"
+        );
+    }
+
     function updateBatchNodes(uint256[] memory indices, uint256[] memory values) internal {
         uint256 len = indices.length;
         require(len == values.length, "indices and values must be same length");
@@ -111,7 +132,6 @@ contract CachedMerkleTests is Test, MerkleTestUtils {
         updateNode(1, 8);
     }
 
-    
     function testCachedManaSingle() public {
         console.log("insert index 0 (cold)");
         updateNode(0, 1);
@@ -145,4 +165,23 @@ contract CachedMerkleTests is Test, MerkleTestUtils {
         console.log("2nd batch (hot)");
         updateBatchNodes(indices, values);
     }
+
+    function testCachedAppend() public {
+        console.log("insert index 0 (cold)");
+        appendNode(1);
+        console.log("insert index 1 (warm)");
+        appendNode(2);
+        console.log("update index 1 (warmer)");
+        appendNode(3);
+
+        console.log("now via update");
+
+        console.log("insert index 1");
+        updateNode(1, 2);
+        console.log("insert index 2");
+        updateNode(2, 3);
+        console.log("update index 0");
+        updateNode(0, 4);
+    }
+
 }
